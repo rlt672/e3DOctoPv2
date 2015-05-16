@@ -5,14 +5,18 @@
 Filename: e3DPGlobals.py
 Author: Ryan L. Truby
 Affiliation: Lewis Research Group, Harvard University
-Data: 2015.01.19
+Date: 2015.01.19
 
 Description:
     This library contains mecode functions and variables used globally by other
     mecode libraries as well as other scripts for embedded 3D (e3D) printing. 
     This code is an adaptation of Dan Fitzgerald's original script, 
     "PrintingGlobals.py", written on 2014.07.23.
-    
+      
+2015.05.15:
+    This file copied and pasted to "e3DOctoPv2" to code up a Fuel Octobot with 
+    oscilattory venting.
+     
 """
 
 from mecode import G

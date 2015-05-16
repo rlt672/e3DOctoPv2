@@ -4,11 +4,15 @@
 Filename: LogicModule.py
 Author: Ryan L. Truby
 Affiliation: Lewis Research Group, Harvard University
-Data: 2015.01.19
+Date: 2015.01.19
 
 Description:
     This library contains mecode functions for printing into logic modules. 
     This code is an adaptation of Dan Fitzgerald's script "LogicModule.py". 
+       
+2015.05.15:
+    This file copied and pasted to "e3DOctoPv2" to code up a Fuel Octobot with 
+    oscilattory venting.
     
 """
 

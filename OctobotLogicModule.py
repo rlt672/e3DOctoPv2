@@ -4,12 +4,16 @@
 Filename: OctobotLogicModule.py
 Author: Ryan L. Truby
 Affiliation: Lewis Research Group, Harvard University
-Data: 2015.01.19
+Date: 2015.01.19
 
 Description:
     This library contains mecode functions for connecting logic modules with 
     printed microfluidics. 
     This code is an adaptation of Dan Fitzgerald's script "SpiderLogicModule.py"
+       
+2015.05.15:
+    This file copied and pasted to "e3DOctoPv2" to code up a Fuel Octobot with 
+    oscilattory venting.
     
 """
 
@@ -144,3 +148,38 @@ def print_pressureChamber_for_test_octobot(Left, fuel_line, needle_insertion, sp
     e3DPGlobals.g.abs_move(y = pressure_channel_back_y-fuel_line-needle_insertion)
     e3DPGlobals.g.dwell(20)
     e3DMatrixPrinting.travel_mode()
+    
+def print_reaction_chamber_for_osc_venting(Left):
+    x_offset_mult = (-1 if Left else 1)
+
+    print "Printing module output to robot channels input via pressure chamber."
+
+    # ramp down down to channel (if needed) will determine min pressure channel back end y
+    pressure_channel_back_y = get_pressure_channel_back_y()
+
+    
+    # Print a pressure chamber/connection from cliff base to the flow channel ends
+    e3DPGlobals.g.write("\n; PRINT PRESSURE CHAMBER FOR " + ("LEFT" if Left else "RIGHT") + " SIDE")
+    MultiMaterial.change_tool(1) # switch to platinum
+    e3DPGlobals.g.abs_move(x=FancyOctobot2.mold_center_x+x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line, y=pressure_channel_back_y) # move over front of the front edge of the module ("cliff")
+    e3DMatrixPrinting.print_mode(print_height_abs=FancyOctobot2.control_line_height_abs)
+    e3DPGlobals.g.dwell(pressure_chamber_connection_dwell_time)
+    e3DPGlobals.g.feed(pressure_chamber_speed)
+    e3DPGlobals.g.abs_move(x=FancyOctobot2.mold_center_x+x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line, y=pressure_channel_back_y+pressure_chamber_total_length) # print up to the channel line back end # FancyOctobot2.control_line_back_y + pressure_channel_overlap
+    e3DPGlobals.g.dwell(pressure_chamber_connection_dwell_time)
+    e3DMatrixPrinting.travel_mode()
+    MultiMaterial.change_tool(0)
+    
+    e3DPGlobals.g.abs_move(x=FancyOctobot2.mold_center_x+x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line, y=pressure_channel_back_y+pressure_channel_overlap)
+    e3DMatrixPrinting.print_mode(print_height_abs = FancyOctobot2.control_line_height_abs, print_speed = e3DMatrixPrinting.default_inlet_print_speed)
+    e3DPGlobals.g.dwell(pressure_chamber_connection_dwell_time)
+    e3DPGlobals.g.abs_move(y=pressure_channel_back_y)
+    e3DMatrixPrinting.move_z_abs(height = LogicModule.module_top_print_height+ramp_height, vertical_travel_speed = e3DMatrixPrinting.default_z_drag_speed) # drag z up the cliff 
+    
+    print "PRESSURE CHAMBER TOTAL LENGTH IS " + str(FancyOctobot2.control_line_back_y + pressure_channel_overlap-pressure_channel_back_y)  
+    
+def print_both_reaction_chambers_for_osc_venting():
+    print_reaction_chamber_for_osc_venting(Left = True)
+    print_reaction_chamber_for_osc_venting(Left = False)
+    
+    

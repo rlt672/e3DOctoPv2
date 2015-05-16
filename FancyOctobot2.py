@@ -4,7 +4,7 @@
 Filename: FancyOctobot2.py
 Author: Ryan L. Truby
 Affiliation: Lewis Research Group, Harvard University
-Data: 2015.04.09
+Date: 2015.04.09
 
 Description:
     This code prints the downstream components of a "fancy" octobot. I've 
@@ -12,6 +12,10 @@ Description:
     points for each actuator. 
     
     MACHINE_ZERO is taken as the zero position on actuators L3 and R3.
+       
+2015.05.15:
+    This file copied and pasted to "e3DOctoPv2" to code up a Fuel Octobot with 
+    oscilattory venting.
     
 """
 
@@ -46,6 +50,10 @@ mold_body_width = 2 * (55-49.4)   # width of narrowest part of the robot body
 
 #  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - 
 # Parameters related to actuators and downstream network geometry 
+
+# Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
+to_osc_vent_offset = 1 # units of mm, the distance downstream of the connection to the first actuators
+    
 actuator_print_height_offset = 0.1     # nozzle height above EcoFlex
 actuator_print_height_offset = 0.15 # added D-80, 2015.04.10; confirmed that this was a good height when testbots were tested on 2015.04.20
 actuator_print_height = 0 + actuator_print_height_offset # print height above EcoFlex
@@ -168,6 +176,8 @@ def print_robot(ecoflex_zero_left, ecoflex_zero_right, func_print_internal_soft_
     if (control_line_A_x != control_line_A_connection_x or routing_back_y != control_line_back_y+control_line_connector_length):
         e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_back_y)
     e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_front_y)
+    # Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
+    e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_front_y + to_osc_vent_offset)
             
     # print top right actuator A1 directly from end of control line A
     e3DMatrixPrinting.move_z_abs(control_line_bridge_height_abs)
@@ -184,6 +194,8 @@ def print_robot(ecoflex_zero_left, ecoflex_zero_right, func_print_internal_soft_
     if (control_line_B_x != control_line_B_connection_x or routing_back_y != control_line_back_y+control_line_connector_length):
         e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_back_y)
     e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_front_y) # arm_rows_shoulder_y_abs[cur_arm_row]
+    # Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
+    e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_front_y + to_osc_vent_offset)
     
     # print top right actuator B1 directly from end of control line B
     e3DMatrixPrinting.move_z_abs(control_line_bridge_height_abs)
