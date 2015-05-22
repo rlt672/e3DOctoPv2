@@ -56,7 +56,7 @@ e3DPGlobals.init_G(exportFileDir)
         GO BACK AND REVIEW THE CODE BELOW AND WHAT IT'S DOING.
 '''
 
-def print_fuel_spider_osc_vent(flow_conncetor_height_abs, centerline_x, flow_connectors_centerline_offset, flow_connectors_back_y):
+def print_fuel_spider_osc_vent(flow_connector_height_abs, centerline_x, flow_connectors_centerline_offset, flow_connectors_back_y):
     plenum_bottom_height = -6 # for deepened fuel reservoir on octobot mold
     plenum_top_height = FancyOctobot2.mold_top - 5
     plenum_meander_print_height = -5.5
@@ -71,7 +71,6 @@ def print_fuel_spider_osc_vent(flow_conncetor_height_abs, centerline_x, flow_con
         x_offset_mult = (-1 if Left else 1)
         
         height_offset = 1.5
-        
         meander_front_y = -41 # 2015.02.03 - switched from -45, -40 was too close
         meander_front_y = -44.5 # for new Octobot molds used in D-90, 2015.04.21
         meander_back_y = -45 # 2015.02.03 - switched from -50
@@ -81,26 +80,73 @@ def print_fuel_spider_osc_vent(flow_conncetor_height_abs, centerline_x, flow_con
         connection_overlap = 0.0   # what is this? it was originally in Dan's code as 0.5 originally
         meander_print_speed = 0.5 # switched from 0.6 on 2014.02.06
         meander_connection_dwell_time = 1
-        ramp_height = 0.0       # also defined in a function in OctobotLogicModule.py
+        ramp_height = 0.0
         
-        safe_hole_connection_x_offset = meander_inner_x_offset
-
         # Print the fuel reservoirs, starting at the check valves. This code was changed for D-90.
-        #LogicModule.interface_with_hole(Left = Left, Front = False, to_cliff = False, Valve = False)
+        # 2015.05.15: First create an interface with the original logic inlets.
+        # 2015.05.15: These inlets will later connect with poitns downstream of all the actuators.
+        LogicModule.interface_with_hole(Left = Left, Front = False, to_cliff = False, Valve = False)
         e3DMatrixPrinting.travel_mode()
+        #2015.05.15: Now interface with the check valve inlets. These will lead to fuel reservoir and onto the reaction chambers.
         LogicModule.interface_with_hole(Left = Left, Front = False, to_cliff = False, Valve = True)
         e3DMatrixPrinting.move_z_abs(module_print_height_back - height_offset, vertical_travel_speed = e3DMatrixPrinting.default_z_drag_speed)
-        e3DPGlobals.g.feed(e3DMatrixPrinting.default_print_speed)
-        e3DPGlobals.g.abs_move(x = centerline_x+x_offset_mult*meander_inner_x_offset)
-        e3DPGlobals.g.abs_move(y = meander_front_y)
+        # 2015.05.15: Move out of the way for connecting up to the reaction chamber:
+        e3DPGlobals.g.abs_move(x = centerline_x + x_offset_mult * meander_inner_x_offset * 2)
+        e3DMatrixPrinting.travel_mode()
+        e3DPGlobals.g.abs_move(y=meander_back_y-connection_overlap)
         e3DMatrixPrinting.print_mode(print_height_abs = plenum_meander_print_height, print_speed = meander_print_speed)
-        e3DPGlobals.g.abs_move(x=centerline_x+x_offset_mult*meander_inner_x_offset, y=meander_back_y-connection_overlap)
-        e3DMatrixPrinting.move_z_abs(height = LogicModule.module_top_print_height+ramp_height)
-        e3DPGlobals.g.abs_move(x=FancyOctobot2.mold_center_x+x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line, y=pressure_channel_back_y+pressure_channel_overlap)
-        e3DMatrixPrinting.travel_mode()      
-                        
+        e3DPGlobals.g.abs_move(y=meander_front_y)
+        e3DMatrixPrinting.move_z_abs(module_print_height_back - height_offset)
+        hole_pos = (LogicModule.check_valve_left_hole_pos if Left else LogicModule.check_valve_right_hole_pos)
+        e3DPGlobals.g.abs_move(x = centerline_x + x_offset_mult * meander_inner_x_offset * 2, y = hole_pos[1])
+        # 2015.05.15: Connect with the channel out of the way and connected to the check valve.
+        e3DPGlobals.g.dwell(meander_connection_dwell_time)
+        e3DMatrixPrinting.travel_mode() 
+        
+        e3DPGlobals.g.abs_move(x = centerline_x + x_offset_mult * meander_inner_x_offset * 2, y = meander_back_y - connection_overlap)
+        e3DMatrixPrinting.print_mode(plenum_meander_print_height, print_speed = meander_print_speed)
+        e3DPGlobals.g.abs_move(x = centerline_x + x_offset_mult * meander_inner_x_offset * 0.5)
+        e3DMatrixPrinting.move_z_abs(module_print_height_back) 
+        
+        # 2015.05.19: Now, it's ime to connect the reaction chamber with the 
+        # fuel reservoir. First print at normal speed, and then create a region 
+        # in the line of very small diameter. Connect with the reaction chamber.
+        small_diameter_filament_length = 5
+        small_diameter_filament_speed = 3
+        e3DPGlobals.g.abs_move(y = hole_pos[1])
+        #2015.05.19: Speed up and move to hiehgt of reaction chamber junction
+        e3DMatrixPrinting.move_z_abs(LogicModule.module_top_print_height+ramp_height)
+        e3DPGlobals.g.feed(small_diameter_filament_speed)
+        e3DPGlobals.g.abs_move(y = hole_pos[1] + small_diameter_filament_length)
+        # 2015.05.19: Slow down
+        e3DPGlobals.g.feed(e3DMatrixPrinting.default_print_speed)     
+        # 2015.05.19: Print up to reaction chamber
+        pressure_channel_back_y = OctobotLogicModule.get_pressure_channel_back_y()
+        e3DPGlobals.g.abs_move(x=FancyOctobot2.mold_center_x+x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line, y = pressure_channel_back_y)
+        e3DPGlobals.g.dwell(meander_connection_dwell_time)
+        e3DMatrixPrinting.travel_mode()
+    
     print_plenum_meander(Left=True)
     print_plenum_meander(Left=False)
+        
+def connect_upstream_inlet_w_actuators():
+    
+    def connect_one_side(Left):
+        x_offset_mult = (-1 if Left else 1)
+        
+        # 2015.05.19: Now, connect the oscillator inlets to the vents downstream
+        # of actuators L1 and R1. Move above inlet hole and connect:
+        hole_pos = (LogicModule.back_left_hole_pos if Left else LogicModule.back_right_hole_pos)
+        e3DPGlobals.g.abs_move(x = hole_pos[0], y = hole_pos[1])
+        e3DMatrixPrinting.print_mode(LogicModule.module_top_print_height, print_speed = e3DMatrixPrinting.default_print_speed)
+        e3DMatrixPrinting.move_z_abs(FancyOctobot2.control_line_height_abs + 1.5)
+        to_y_downstream_of_actuator = FancyOctobot2.routing_front_y + FancyOctobot2.to_osc_vent_offset
+        control_line_x = FancyOctobot2.mold_center_x + x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line
+        e3DPGlobals.g.abs_move(x=control_line_x, y = to_y_downstream_of_actuator)
+        e3DMatrixPrinting.travel_mode()
+                           
+    connect_one_side(Left=True)
+    connect_one_side(Left=False)
     
 
 def print_fuel_spider(flow_connector_height_abs, centerline_x, flow_connectors_centerline_offset, flow_connectors_back_y):    
@@ -188,7 +234,8 @@ right_zeros = [-57.301, -57.1908, -57.1744, -57.1608] # R1, R2, R3, R4, added 20
 
 #FancyOctobot was used up until Experiment D-90 (2015.04.21)
 #FancyOctobot2.print_robot(ecoflex_zero_left = left_zero, ecoflex_zero_right = right_zero, func_print_internal_soft_logic=print_fuel_spider)     
-FancyOctobot2.print_robot(ecoflex_zero_left = left_zeros, ecoflex_zero_right = right_zeros, func_print_internal_soft_logic=print_fuel_spider)
+FancyOctobot2.print_robot(ecoflex_zero_left = left_zeros, ecoflex_zero_right = right_zeros, func_print_internal_soft_logic=print_fuel_spider_osc_vent)
+connect_upstream_inlet_w_actuators()
 #The line below commented out on 2014.09.10 by RTruby, for Experiment C-95
 e3DPGlobals.g.view('matplotlib')
 #e3DPGlobals.g.view()

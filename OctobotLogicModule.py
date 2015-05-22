@@ -156,7 +156,7 @@ def print_reaction_chamber_for_osc_venting(Left):
 
     # ramp down down to channel (if needed) will determine min pressure channel back end y
     pressure_channel_back_y = get_pressure_channel_back_y()
-
+    ramp_height = 0.0
     
     # Print a pressure chamber/connection from cliff base to the flow channel ends
     e3DPGlobals.g.write("\n; PRINT PRESSURE CHAMBER FOR " + ("LEFT" if Left else "RIGHT") + " SIDE")
@@ -175,6 +175,7 @@ def print_reaction_chamber_for_osc_venting(Left):
     e3DPGlobals.g.dwell(pressure_chamber_connection_dwell_time)
     e3DPGlobals.g.abs_move(y=pressure_channel_back_y)
     e3DMatrixPrinting.move_z_abs(height = LogicModule.module_top_print_height+ramp_height, vertical_travel_speed = e3DMatrixPrinting.default_z_drag_speed) # drag z up the cliff 
+    e3DMatrixPrinting.travel_mode()
     
     print "PRESSURE CHAMBER TOTAL LENGTH IS " + str(FancyOctobot2.control_line_back_y + pressure_channel_overlap-pressure_channel_back_y)  
     
