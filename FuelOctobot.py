@@ -134,12 +134,27 @@ def connect_upstream_inlet_w_actuators():
     def connect_one_side(Left):
         x_offset_mult = (-1 if Left else 1)
         
+        height_offset = 1.5
+        meander_front_y = -41 # 2015.02.03 - switched from -45, -40 was too close
+        meander_front_y = -44.5 # for new Octobot molds used in D-90, 2015.04.21
+        meander_back_y = -45 # 2015.02.03 - switched from -50
+        meander_back_y = -47.5 # for new Octobot molds used in D-90, 2015.04.21
+        ##meander_inner_x_offset = 3 # was originally 0.75 in Dan's code
+        meander_inner_x_offset = 1.5 #added for D-80
+        connection_overlap = 0.0   # what is this? it was originally in Dan's code as 0.5 originally
+        meander_print_speed = 0.5 # switched from 0.6 on 2014.02.06
+        meander_connection_dwell_time = 1
+        ramp_height = 0.0
+        small_diameter_filament_speed = 3
+        
         # 2015.05.19: Now, connect the oscillator inlets to the vents downstream
         # of actuators L1 and R1. Move above inlet hole and connect:
         hole_pos = (LogicModule.back_left_hole_pos if Left else LogicModule.back_right_hole_pos)
         e3DPGlobals.g.abs_move(x = hole_pos[0], y = hole_pos[1])
         e3DMatrixPrinting.print_mode(LogicModule.module_top_print_height, print_speed = e3DMatrixPrinting.default_print_speed)
-        e3DMatrixPrinting.move_z_abs(FancyOctobot2.control_line_height_abs + 1.5)
+        e3DMatrixPrinting.move_z_abs(FancyOctobot2.control_line_height_abs + 2)
+        e3DPGlobals.g.feed(small_diameter_filament_speed)
+        e3DPGlobals.g.abs_move(x = FancyOctobot2.mold_center_x + x_offset_mult * meander_inner_x_offset * 4)
         to_y_downstream_of_actuator = FancyOctobot2.routing_front_y + FancyOctobot2.to_osc_vent_offset
         control_line_x = FancyOctobot2.mold_center_x + x_offset_mult*FancyOctobot2.control_line_connector_x_dist_from_center_line
         e3DPGlobals.g.abs_move(x=control_line_x, y = to_y_downstream_of_actuator)
@@ -229,8 +244,8 @@ def print_fuel_spider(flow_connector_height_abs, centerline_x, flow_connectors_c
 left_zero = -58.725
 right_zero = -58.8127
 # left_zeros and right_zeros are needed for FancyOctobot2
-left_zeros = [-57.2102, -57.1204, -57.1126, -57.1] # L1, L2, L3, L4, added 20150409
-right_zeros = [-57.301, -57.1908, -57.1744, -57.1608] # R1, R2, R3, R4, added 20150409
+left_zeros = [-57.782, -57.782, -57.882, -57.782] # L1, L2, L3, L4, added 20150409
+right_zeros = [-57.782, -57.782, -57.882, -57.782] # R1, R2, R3, R4, added 20150409
 
 #FancyOctobot was used up until Experiment D-90 (2015.04.21)
 #FancyOctobot2.print_robot(ecoflex_zero_left = left_zero, ecoflex_zero_right = right_zero, func_print_internal_soft_logic=print_fuel_spider)     

@@ -53,7 +53,7 @@ mold_body_width = 2 * (55-49.4)   # width of narrowest part of the robot body
 
 # Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
 to_osc_vent_offset = 1 # units of mm, the distance downstream of the connection to the first actuators
-    
+to_osc_vent_offset = 1.8 # 1 mm was too short
 actuator_print_height_offset = 0.1     # nozzle height above EcoFlex
 actuator_print_height_offset = 0.15 # added D-80, 2015.04.10; confirmed that this was a good height when testbots were tested on 2015.04.20
 actuator_print_height = 0 + actuator_print_height_offset # print height above EcoFlex
@@ -175,15 +175,16 @@ def print_robot(ecoflex_zero_left, ecoflex_zero_right, func_print_internal_soft_
     e3DPGlobals.g.feed(e3DMatrixPrinting.default_print_speed)
     if (control_line_A_x != control_line_A_connection_x or routing_back_y != control_line_back_y+control_line_connector_length):
         e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_back_y)
-    e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_front_y)
     # Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
     e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_front_y + to_osc_vent_offset)
-    e3DMatrixPrinting.move_z_abs(control_line_height_abs + 1.5)
+    e3DMatrixPrinting.move_z_abs(control_line_height_abs + 2)
     e3DMatrixPrinting.travel_mode()
+    e3DPGlobals.g.abs_move(x=control_line_A_x, y = routing_front_y)
+    
             
     # print top right actuator A1 directly from end of control line A
-    e3DPGlobals.g.abs_move(x=control_line_A_x - routing_turnpoint_from_lines_x, y=routing_leg_offshoot_points[0])
     e3DMatrixPrinting.print_mode(print_height_abs = control_line_bridge_height_abs, print_speed = e3DMatrixPrinting.default_print_speed)
+    e3DPGlobals.g.abs_move(x=control_line_A_x - routing_turnpoint_from_lines_x, y=routing_leg_offshoot_points[0])
     e3DPGlobals.g.abs_move(x=mold_center_x-arm_rows_shouder_x_centerline_offsets[cur_arm_row], y=arm_rows_shoulder_y_abs[cur_arm_row])
     print_left_actuator(row=cur_arm_row, arm_forarm_preActuator_length=arm_forarm_preActuator_length_arm1, num_pads = 1, zero_reference_diff = ecoflex_zero_left[cur_arm_row]-MACHINE_ZERO)
 
@@ -194,15 +195,16 @@ def print_robot(ecoflex_zero_left, ecoflex_zero_right, func_print_internal_soft_
     e3DPGlobals.g.feed(e3DMatrixPrinting.default_print_speed)
     if (control_line_B_x != control_line_B_connection_x or routing_back_y != control_line_back_y+control_line_connector_length):
         e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_back_y)
-    e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_front_y) # arm_rows_shoulder_y_abs[cur_arm_row]
     # Line below added 2015.05.15 when coding up a Fuel Octobot with oscillatory venting:
     e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_front_y + to_osc_vent_offset)
-    e3DMatrixPrinting.move_z_abs(control_line_height_abs + 1.5)
+    e3DMatrixPrinting.move_z_abs(control_line_height_abs + 2)
     e3DMatrixPrinting.travel_mode()
+    e3DPGlobals.g.abs_move(x=control_line_B_x, y = routing_front_y) # arm_rows_shoulder_y_abs[cur_arm_row]
+
     
     # print top right actuator B1 directly from end of control line B
-    e3DPGlobals.g.abs_move(x=control_line_B_x + routing_turnpoint_from_lines_x, y=routing_leg_offshoot_points[0])
     e3DMatrixPrinting.print_mode(print_height_abs = control_line_bridge_height_abs, print_speed = e3DMatrixPrinting.default_print_speed)
+    e3DPGlobals.g.abs_move(x=control_line_B_x + routing_turnpoint_from_lines_x, y=routing_leg_offshoot_points[0])
     e3DPGlobals.g.abs_move(x=mold_center_x+arm_rows_shouder_x_centerline_offsets[cur_arm_row], y=arm_rows_shoulder_y_abs[cur_arm_row])
     print_right_actuator(row=cur_arm_row, arm_forarm_preActuator_length=arm_forarm_preActuator_length_arm1, num_pads = 1, zero_reference_diff = ecoflex_zero_right[cur_arm_row]-MACHINE_ZERO)
             
